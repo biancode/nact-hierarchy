@@ -42,7 +42,7 @@ const ContactProtocolTypes = {
 const stateIsReady = (state, ctx) => {
   if (!state.contacts) {
     console.error('renew broken state for storing contacts');
-    state = new Object(initNactState);
+    state = Object.assign(initNactState);
     nact.dispatch(
       ctx.sender,
       { type: ContactProtocolTypes.EMPTY, payload: Object.values(contacts) },
@@ -93,9 +93,8 @@ const handleExpliciteRequest = (state, ctx, requestType, contact, newData) => {
       nact.dispatch(ctx.sender, { type: ContactProtocolTypes.SUCCESS, payload: contact });
       break;
     case ContactProtocolTypes.UPDATE_CONTACT:
-      const updatedContact = { ...contact, ...newData };
-      state.contacts = { ...state.contacts, [updatedContact.id]: updatedContact };
-      nact.dispatch(ctx.sender, { type: ContactProtocolTypes.SUCCESS, payload: updatedContact });
+      state.contacts = { ...state.contacts, [contact.id]: { ...contact, ...newData } };
+      nact.dispatch(ctx.sender, { type: ContactProtocolTypes.SUCCESS, payload: state.contacts[contact.id] });
       break;
     default:
       sendOperationNotFound(ctx, requestType);
@@ -120,9 +119,16 @@ const handleRequest = (state, ctx, msg) => {
   return state;
 };
 
+const delay = duration => new Promise((resolve) => setTimeout(() => resolve(), duration));
+
+const reset = async (msg, error, ctx) => {
+  await delay(Math.random() * 500 - 750);
+  return ctx.reset;
+};
+
 const spawnUserContactService = (parent, userId) => nact.spawn(
   parent,
-  (state = new Object(initNactState), msg, ctx) => {
+  (state = Object.assign(initNactState), msg, ctx) => {
     if (stateIsReady(state, ctx)) {
       state = handleRequest(state, ctx, msg);
     }
@@ -143,7 +149,8 @@ const contactsService = (parent) => nact.spawnStateless(
     }
     nact.dispatch(childActor, msg, ctx.sender);
   },
-  'contacts'
+  'contacts',
+  { onCrash: reset }
 );
 
 module.exports.service = { contactsService, ContactProtocolTypes };
