@@ -1,0 +1,22 @@
+{
+  "name": "nact-hierarchy",
+  "version": "1.0.0",
+  "description": "A nact hierarchy express app example.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "jest"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nact": "^7.2.1",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "eslint": "^6.2.2",
+    "jest": "^24.9.0",
+    "semistandard": "^14.0.1"
+  }
+}
